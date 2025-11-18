@@ -2,11 +2,10 @@ import os
 import random 
 import shutil
 
-datasetA = ""
-datasetB = ""
+datasetA = "/home/qminh/Documents/qm/USTH/COURSES/B3/Project/Dataset/hand-dataset"
+datasetB = "/home/qminh/Documents/qm/USTH/COURSES/B3/Project/Dataset/FreiHAND-yolo"
 
-output_root  = ""
-os.makedirs(output, exist_ok=True)
+output_root  = "/home/qminh/Documents/qm/USTH/COURSES/B3/Project/Dataset/Hand-dataset-v2"
 N = 10000
 
 TRAIN_RATIO = 0.8
@@ -18,11 +17,11 @@ random.seed(42)
 images_root = os.path.join(output_root, "images")
 labels_root = os.path.join(output_root, "labels")
 
-os.makedir(images_root, exist_ok=True)
-os.makedir(labels_root, exist_ok=True)
+os.makedirs(images_root, exist_ok=True)
+os.makedirs(labels_root, exist_ok=True)
 
 # Collect from train, val, test in each datasets
-def collect_all_image(dataset_root):
+def collect_all_images(dataset_root):
     splits = ["train", "val", "test"]
     pairs = []
     for split in splits:
@@ -55,7 +54,7 @@ def sample_and_copy(pairs, n_samples, prefix, images_out, labels_out):
     if n_samples > len(pairs):
         raise ValueError(
             f"Requested {n_samples} sample with prefix {prefix}, "
-            f"but only {len(pairs) available.}"
+            f"but only {len(pairs)} available."
         )
 
     selected = random.sample(pairs, n_samples)
@@ -93,3 +92,52 @@ def move_split(img_list, split_name, images_root, labels_root):
             shutil.move(src_lbl, dst_lbl)
         else:
             print(f"Missing label when moving {img_name}: {src_lbl}")
+
+
+# Collect and sample from each dataset
+print("Collect image from hand_detection...")
+pairs_A = collect_all_images(datasetA)
+print(f"Dataset hand_detection: found {len(pairs_A)}")
+
+print("Collecting images from dataset FreiHAND")
+pairs_B = collect_all_images(datasetB)
+print(f"Dataset FreiHAND: found {len(pairs_B)}")
+
+print("Sampling from hand_detection dataset ...")
+sample_and_copy(pairs_A, N, prefix="SL", images_out=images_root, labels_out=labels_root)
+
+print("Sampling from FreiHAND dataset ...")
+sample_and_copy(pairs_B, N, prefix="FreiHAND", images_out=images_root, labels_out=labels_root)
+
+
+print("\nFinished combining, now i will create and split hehehe")
+
+# Create new train, val, test split
+all_images = [
+    f for f in os.listdir(images_root) if f.lower().endswith((".jpg", ".jpeg", ".png"))
+]
+
+random.shuffle(all_images)
+total = len(all_images)
+
+n_train = int(total * TRAIN_RATIO)
+n_val  = int(total * VAL_RATIO)
+n_test = total - n_train - n_val
+
+train_imgs = all_images[:n_train]
+val_imgs = all_images[n_train:n_train + n_val]
+test_imgs = all_images[n_train + n_val:]
+
+print(f"Total images combined: {total}")
+print(f"Train: {len(train_imgs)}, Val: {len(val_imgs)}, Test: {len(test_imgs)}")
+
+print("Moving train images ...")
+move_split(train_imgs, "train", images_root, labels_root)
+
+print("Moving test images ...")
+move_split(test_imgs, "test", images_root, labels_root)
+
+print("Moving val images ...")
+move_split(val_imgs, "val", images_root, labels_root)
+
+print("DONE!!! dsakjhfkajwhefkjhawekjfhakwjehfauiwtyefyai uweyf nghỉ thôi")
