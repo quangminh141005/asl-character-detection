@@ -70,3 +70,26 @@ def sample_and_copy(pairs, n_samples, prefix, images_out, labels_out):
 
         shutil.copy2(img_path, dst_img)
         shutil.copy2(lbl_path, dst_lbl)
+
+# Split dataset to train, test, val
+def move_split(img_list, split_name, images_root, labels_root):
+    split_img_dir = os.path.join(images_root, split_name)
+    split_lbl_dir = os.path.join(labels_root, split_name)
+    os.makedirs(split_img_dir, exist_ok=True)
+    os.makedirs(split_lbl_dir, exist_ok=True)
+
+    for img_name in img_list:
+        # move image
+        src_img = os.path.join(images_root, img_name)
+        dst_img = os.path.join(split_img_dir, img_name)
+        shutil.move(src_img, dst_img)
+
+        # move label
+        base = os.path.splitext(img_name)[0]
+        src_lbl = os.path.join(labels_root, base + ".txt")
+        dst_lbl = os.path.join(split_lbl_dir, base + ".txt")
+
+        if os.path.exists(src_lbl):
+            shutil.move(src_lbl, dst_lbl)
+        else:
+            print(f"Missing label when moving {img_name}: {src_lbl}")
