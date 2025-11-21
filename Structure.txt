@@ -1,0 +1,12 @@
+ASL-CHARACTER-DETECTION/model-combine
+├── detection/
+│   ├── yolov8_hand.pt
+│   └── detect_hands.py
+├── pose/
+│   ├── rtmpose_hand_256x256.py      # RTMPose config
+│   ├── rtmpose_hand_256x256.pth     # RTMPose pretrained weights
+│   └── infer_rtmpose_from_yolo.py   # glue code
+├── data/
+│   └── images/
+│       └── test_image    
+└── bboxes (json for yolo boxes, remove later)
