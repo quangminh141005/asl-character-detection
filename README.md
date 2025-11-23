@@ -2,8 +2,8 @@
 
 ## 1. Quick Guide
 1. Create the conda environment using:
-   - `environment_gpu.yml` (if using GPU), or  
-   - `environment_cpu.yml` (if using CPU)
+   - `./conda_env/environment_gpu.yml` (if using GPU), or  
+   - `./conda_env/environment_cpu.yml` (if using CPU)
 2. Run `./model-combine/pose/infer_hand_rtmpose_webcam.py` to test hand-landmark detection via webcam.  
    Make sure to update the `device` setting according to your hardware (**cpu** or **cuda:0**).
 
