@@ -8,7 +8,7 @@
    Make sure to update the `device` setting according to your hardware (**cpu** or **cuda:0**).
 
 ## 2. Project Structure
-`
+```
 ASL-CHARACTER-DETECTION/model-combine
 ├── dataset-maker-for-svm
 │   ├── asl_svm_dataset.csv
@@ -42,7 +42,7 @@ ASL-CHARACTER-DETECTION/model-combine
 ├── README.md
 ├── requirements.txt
 └── Structure.txt
-`
+```
 
 ## 3. Description
 This repository contains the model components for the 3-phase ASL character recognition pipeline:
