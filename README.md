@@ -10,12 +10,13 @@
 ## 2. Project Structure
 ```
 ASL-CHARACTER-DETECTION/model-combine
+├── conda_env
+│   ├── enviroment_cpu.yml
+│   └── enviroment_gpu.yml
 ├── dataset-maker-for-svm
 │   ├── asl_svm_dataset.csv
 │   └── asl_svm_dataset.py
 ├── edit_dataset.py
-├── enviroment_cpu.yml
-├── enviroment_gpu.yml
 ├── hand_palm_detection_model.ipynb
 ├── model-combine
 │   ├── bboxes
@@ -40,8 +41,8 @@ ASL-CHARACTER-DETECTION/model-combine
 │       └── svm_train.py
 ├── Pre_process_data.ipynb
 ├── README.md
-├── requirements.txt
-└── Structure.txt
+└── requirements.txt
+
 ```
 
 ## 3. Description
