@@ -1,12 +1,36 @@
 ASL-CHARACTER-DETECTION/model-combine
-├── detection/
-│   ├── yolov8_hand.pt
-│   └── detect_hands.py
-├── pose/
-│   ├── rtmpose_hand_256x256.py      # RTMPose config
-│   ├── rtmpose_hand_256x256.pth     # RTMPose pretrained weights
-│   └── infer_rtmpose_from_yolo.py   # glue code
-├── data/
-│   └── images/
-│       └── test_image    
-└── bboxes (json for yolo boxes, remove later)
+├── dataset-maker-for-svm
+│   ├── asl_svm_dataset.csv
+│   └── asl_svm_dataset.py
+├── edit_dataset.py
+├── enviroment_cpu.yml
+├── enviroment_gpu.yml
+├── hand_palm_detection_model.ipynb
+├── model-combine
+│   ├── bboxes
+│   │   └── test_bbox.json
+│   ├── data
+│   │   ├── test2.jpg
+│   │   ├── test_detected.jpg
+│   │   ├── test_hand_pose.jpg
+│   │   └── test.png
+│   ├── detection
+│   │   ├── detect_hand.py
+│   │   ├── hqm_hand_palm.pt
+│   │   └── yolov8.pt
+│   ├── pose
+│   │   ├── infer_hand_rtmpose.py
+│   │   ├── infer_hand_rtmpose_webcam.py
+│   │   ├── rtmpose-m-hand-256x256.py
+│   │   └── rtmpose-m_simcc-hand5_pt-aic-coco_210e-256x256-74fb594_20230320.pth
+│   └── svm
+│       ├── result.txt
+│       ├── svm_asl_model.joblib
+│       └── svm_train.py
+├── Pre_process_data.ipynb
+├── README.md
+├── requirements.txt
+└── Structure.txt
+
+
+
