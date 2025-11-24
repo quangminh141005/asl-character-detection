@@ -5,14 +5,13 @@ from ultralytics import YOLO
 from mmpose.apis import init_model, inference_topdown
 from mmengine.model.utils import revert_sync_batchnorm
 
-# ======= PATHS YOU EDIT =======
+# Paths
 IMG_PATH = "/home/qminh/Documents/qm/USTH/COURSES/B3/Project/asl-character-detection/model-combine/data/test2.jpg"
 YOLO_WEIGHTS = "/home/qminh/Documents/qm/USTH/COURSES/B3/Project/asl-character-detection/model-combine/detection/yolov8.pt"
 
 POSE_CONFIG = "/home/qminh/Documents/qm/USTH/COURSES/B3/Project/asl-character-detection/model-combine/pose/rtmpose-m-hand-256x256.py"
 POSE_CKPT = "/home/qminh/Documents/qm/USTH/COURSES/B3/Project/asl-character-detection/model-combine/pose/rtmpose-m_simcc-hand5_pt-aic-coco_210e-256x256-74fb594_20230320.pth"
 DEVICE = "cpu"  # or "cuda:0"
-# ==============================
 
 # 1. Load YOLO model
 det_model = YOLO(YOLO_WEIGHTS)
