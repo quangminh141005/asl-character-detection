@@ -65,3 +65,20 @@ def denorm_landmark(output, num_landmarks, crop_box):
     ys = coords[:, 1] * h + y1
 
     return np.stack([xs, ys], axis=1)
+
+def expand_box(x1, y1, x2, y2, img_w, img_h, scale=0.2):
+    """
+    Expand boudning box by same raito and clamp to image size
+    """
+    w = x2 - x1
+    h = y2 - y1 
+    cx = x1 + w / 2
+    cy = y1 + h / 2
+
+    new_w = w * (1 + scale)
+    new_h = h * (1 + scale)
+
+    nx1 = max(0, int(cx - new_w / 2))
+    nx2 = max(0, int(cy - new_h / 2))
+    nx2 = min(img_w - 1, int(cx + new_w / 2))
+    ny2 = min(img_h - 1, int(cy + new_h / 2))
