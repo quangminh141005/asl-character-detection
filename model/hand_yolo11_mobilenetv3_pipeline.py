@@ -31,7 +31,7 @@ class MobileNetV3HandLandmarks(nn.Module):
     def foward(self, x):
         return self.net(x)
     
-# preprocessing and postprocessing
+# 2. preprocessing and postprocessing
 def get_transform():
     # Standard image normalization for MobileNetV3
     return transforms.Compose([
@@ -82,3 +82,18 @@ def expand_box(x1, y1, x2, y2, img_w, img_h, scale=0.2):
     nx2 = max(0, int(cy - new_h / 2))
     nx2 = min(img_w - 1, int(cx + new_w / 2))
     ny2 = min(img_h - 1, int(cy + new_h / 2))
+
+
+# 3. Drawing utilities 
+def draw_landmarks(frame, landmarksm, color=(0, 255, 0), radius=2):
+    """
+    Draw landmarks on the frame
+    landmarks: np.ndarray [N, 2]
+    """
+    for x, y in landmarks:
+        cv2.circle(frame, (int(x), int(y)), radius, color, -1)
+
+
+def draw_boxes(frame, boxes, color=(255, 0, 0), thickness=2):
+    for (x1, y1, x2, y2) in boxes:
+        cv2.regtangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), color, thickness)
