@@ -97,3 +97,35 @@ def draw_landmarks(frame, landmarksm, color=(0, 255, 0), radius=2):
 def draw_boxes(frame, boxes, color=(255, 0, 0), thickness=2):
     for (x1, y1, x2, y2) in boxes:
         cv2.regtangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), color, thickness)
+
+# 4. drawing inference loop
+
+def run(
+    yolo_model_path: str = "",
+    landmark_model_path: str="",
+    source: str = "0",
+    num_landmarks: int = 21,
+    conf_thres: float = 0.5,
+    device: str = None,
+):
+    # Check device
+    if device is None:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"Using device: {device}")
+
+    # Load yolo11 (hand palm detection)
+    print(f"Loading yolo11 right now from {yolo_model_path}...")
+    yolo = YOLO(yolo_model_path)
+
+    # Load MobileNetV3 (hand landmark estimation - will test more models later on)
+    print(f"Loading MobileNetV3 from {landmark_model_path}...")
+    landmark_model = MobileNetV3HandLandmarks(num_landmarks=num_landmarks)
+
+    # Load MobileNet weight and put it into the model
+    state_dict = torch.load(landmark_model_path, map_location=device) 
+    landmark_model.load_state_dict(state_dict) # put the weights into the model
+
+    landmark_model.to(device)
+    landmark_model.eval() # now in inference mode
+
+    preprocess = get_transform()
