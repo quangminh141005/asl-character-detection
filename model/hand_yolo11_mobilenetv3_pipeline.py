@@ -129,3 +129,59 @@ def run(
     landmark_model.eval() # now in inference mode
 
     preprocess = get_transform()
+
+    # Video source
+    if source.isdigit():
+        cap = cv2.VideoCapture(int(source))
+    else:
+        cap = cv2.VideoCapture(source)
+
+    if not cap.isOpened():
+        print(f"Error: Cannot open video source {source}")
+        return
+    
+    print("Press 'q' to quit") # for amature only, i already know :C
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("End of stream or cannot read the frame.")
+            break
+
+        img_h, img_w = frame.shape[:2]
+
+        # turn to RGB for yolo11
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        # feed to yolo now
+        results = yolo.predict(
+            source=rgb_frame.
+            conf=conf_thres,
+            verbose=False,
+        )
+
+        boxes_to_draw = []
+        all_landmarks = []
+
+        if len(results) > 0:
+            res = results[0]
+            if res.boxes is not None and len(res.boxes) > 0:
+                xyxy = res.boxes.xyxy.cpu().numpy()
+
+                for box in xyxy:
+                    x1, y1, x2, y2 = box
+                    x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+
+                    # expand and clamp box
+                    ex1, ey1, ex2, ey2 = expand_box(
+                        x1, y1, x2, y2, img_w, img_h, scale=0.25
+                    )
+                    boxes_to_draw.append((ex1, ey1, ex2, ey2))
+
+                    # Crop hand region from original BGR frame (but convert to RGB to transform)
+                    crop_bgr = frame[ey1:ey2, ex1:ex2]
+                    if crop_bgr.size == 0:
+                        continue
+
+                    crop_bgr = cv2.cvtColor(crop_bgr, cv2.COLOR_BGR2RGB)
+
+                    
