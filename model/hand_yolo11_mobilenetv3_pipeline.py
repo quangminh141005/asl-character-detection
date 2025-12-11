@@ -3,7 +3,7 @@ import cv2
 import torch
 import numpy as np
 
-from ultralytics import yolo
+from ultralytics import YOLO
 from torchvision import models, transforms
 import torch.nn as nn
 
@@ -26,17 +26,24 @@ class MobileNetV3HandLandmarks(nn.Module):
         in_features = backbone.classifier[-1].in_features
         backbone.classifier[-1] = nn.Linear(in_features, 2 * num_landmarks)
 
-        self.net = backbone
+        # IMPORTANT CHANGE: expose same structure as original model
+        self.features = backbone.features
+        self.avgpool = backbone.avgpool
+        self.classifier = backbone.classifier
 
-    def foward(self, x):
-        return self.net(x)
+    def forward(self, x):
+        x = self.features(x)
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        x = self.classifier(x)
+        return x
     
 # 2. preprocessing and postprocessing
 def get_transform():
     # Standard image normalization for MobileNetV3
     return transforms.Compose([
         transforms.ToPILImage(),
-        transforms.ReSize((224, 224)),
+        transforms.Resize((224, 224)),
         transforms.ToTensor(),
         transforms.Normalize(
             mean=[0.485, 0.456, 0.406],
@@ -79,13 +86,15 @@ def expand_box(x1, y1, x2, y2, img_w, img_h, scale=0.2):
     new_h = h * (1 + scale)
 
     nx1 = max(0, int(cx - new_w / 2))
-    nx2 = max(0, int(cy - new_h / 2))
+    ny1 = max(0, int(cy - new_h / 2))
     nx2 = min(img_w - 1, int(cx + new_w / 2))
     ny2 = min(img_h - 1, int(cy + new_h / 2))
 
+    return nx1, ny1, nx2, ny2
+
 
 # 3. Drawing utilities 
-def draw_landmarks(frame, landmarksm, color=(0, 255, 0), radius=2):
+def draw_landmarks(frame, landmarks, color=(0, 255, 0), radius=2):
     """
     Draw landmarks on the frame
     landmarks: np.ndarray [N, 2]
@@ -96,13 +105,13 @@ def draw_landmarks(frame, landmarksm, color=(0, 255, 0), radius=2):
 
 def draw_boxes(frame, boxes, color=(255, 0, 0), thickness=2):
     for (x1, y1, x2, y2) in boxes:
-        cv2.regtangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), color, thickness)
+        cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), color, thickness)
 
 # 4. drawing inference loop
 
 def run(
-    yolo_model_path: str = "",
-    landmark_model_path: str="",
+    yolo_model_path: str = "/home/qminh/Documents/qm/USTH/COURSES/B3/Project/asl-character-detection/model/detection/yolo11_best.pt",
+    landmark_model_path: str = "/home/qminh/Documents/qm/USTH/COURSES/B3/Project/asl-character-detection/model/pose/mobilenetv3_handkeypoints_best.pth",
     source: str = "0",
     num_landmarks: int = 21,
     conf_thres: float = 0.5,
@@ -154,7 +163,7 @@ def run(
 
         # feed to yolo now
         results = yolo.predict(
-            source=rgb_frame.
+            source=rgb_frame,
             conf=conf_thres,
             verbose=False,
         )
@@ -182,6 +191,90 @@ def run(
                     if crop_bgr.size == 0:
                         continue
 
-                    crop_bgr = cv2.cvtColor(crop_bgr, cv2.COLOR_BGR2RGB)
+                    crop_rgb = cv2.cvtColor(crop_bgr, cv2.COLOR_BGR2RGB)
+
+                    # Proprocessing for mobilenet
+                    inp = preprocess(crop_rgb) # 3x224x224
+                    inp = inp.unsqueeze(0).to(device) # 1x3x224x224
+
+                    with torch.no_grad():
+                        preds = landmark_model(inp)[0] # take (batchsize, num_ouputs)  so [0] will be the batchsize
 
                     
+                    # Convert back to the original image cordinates
+                    lm = denorm_landmark(
+                        output=preds,
+                        num_landmarks=num_landmarks,
+                        crop_box=(ex1, ey1, ex2, ey2)
+                    )    
+                    all_landmarks.append(lm)
+
+        
+        # Draw everything now
+        draw_boxes(frame, boxes_to_draw, color=(0, 0, 255), thickness=2)
+        for lm in all_landmarks:
+            draw_landmarks(frame, lm, color=(0, 255, 0), radius=2)
+
+        cv2.imshow("Hand Detection + Landmarks", frame)
+
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord("q"):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+
+# 5. CLI
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Combine YOLO11 hand detection with MobileNetV3 landmark model."
+    )
+    parser.add_argument(
+        "--yolo-model",
+        type=str,
+        default="/home/qminh/Documents/qm/USTH/COURSES/B3/Project/asl-character-detection/model/detection/yolo11_best.pt",
+        help="Path to YOLO11 hand detection model (.pt)",
+    )
+    parser.add_argument(
+        "--landmark-model",
+        type=str,
+        default="/home/qminh/Documents/qm/USTH/COURSES/B3/Project/asl-character-detection/model/pose/mobilenetv3_handkeypoints_best.pth",
+        help="Path to MobileNetV3 hand landmark model (.pth)",
+    )
+    parser.add_argument(
+        "--source",
+        type=str,
+        default="0",
+        help="Video source: camera index or video file path (default: 0)",
+    )
+    parser.add_argument(
+        "--num-landmarks",
+        type=int,
+        default=21,
+        help="Number of hand landmarks predicted by MobileNetV3",
+    )
+    parser.add_argument(
+        "--conf-thres",
+        type=float,
+        default=0.5,
+        help="Confidence threshold for YOLO11 detection",
+    )
+    parser.add_argument(
+        "--device",
+        type=str,
+        default=None,
+        help="Device to use: 'cuda', 'cpu' or None (auto)",
+    )
+    return parser.parse_args()
+
+if __name__ == "__main__":
+    args = parse_args()
+    run(
+        yolo_model_path=args.yolo_model,
+        landmark_model_path=args.landmark_model,
+        source=args.source,
+        num_landmarks=args.num_landmarks,
+        conf_thres=args.conf_thres,
+        device=args.device,
+    )
