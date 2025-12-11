@@ -44,3 +44,24 @@ def get_transform():
         )
     ])
 
+def denorm_landmark(output, num_landmarks, crop_box):
+    """
+    Convert normalized landmark prediction back to the original value
+
+    Args:
+        output: tensor of shape (num_landmarks * 2) with values in [0, 1]
+        num_landmarks: number of landmarks
+        crop_box: (x1, y1, x2, y2) in original image coordinates
+
+    Returns:
+        np.array of shape (num_landmarks, 2) with pixel coordinates (x, y)
+    """
+
+    x1, y1, x2, y2 = crop_box
+    w = x2 - x1
+    h = y2 - y1
+    coords = output.view(num_landmarks, 2).detach().cpu().numpy()
+    xs = coords[:, 0] * w + x1
+    ys = coords[:, 1] * h + y1
+
+    return np.stack([xs, ys], axis=1)
