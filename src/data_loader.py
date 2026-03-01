@@ -11,4 +11,5 @@ def load_data(csv_file: str = CSV_FILE) -> pd.DataFrame:
     
     return df
 
-def get
+def get_feature_cols(df: pd.DataFrame) -> list:
+    return [c for c in df.columns if c.endswith("_x") or c.endswith("_y")]
