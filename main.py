@@ -1,10 +1,8 @@
-# main.py
-
 from src.data_loader import load_data, get_feature_cols
 from src.splitter import make_splits
 from src.visualize import inspect_data, plot_samples, plot_augmentations
 from src.train_svm import cross_validate, train_final
-from src.evaluate import evaluate_on_test, print_confusion_matrix
+from src.evaluate import evaluate_on_test, plot_confusion_matrix
 
 
 def main():
@@ -13,7 +11,7 @@ def main():
     inspect_data(df)
     feature_cols = get_feature_cols(df)
 
-    # 2. Visualize samples & augmentations
+    # 2. Visualize samples & augmentations  →  saved to outputs/plots/
     plot_samples(df)
     plot_augmentations(df)
 
@@ -24,13 +22,15 @@ def main():
     # 4. Cross-validate
     cross_validate(X_train_full, y_train_full, split_iter)
 
-    # 5. Train final model & evaluate on test
+    # 5. Train final model
     final_pipe = train_final(X_train_full, y_train_full)
+
+    # 6. Evaluate on test  →  saves test_metrics.txt
     y_pred = evaluate_on_test(final_pipe, X_test, y_test)
 
-    # 6. Confusion matrices
-    print_confusion_matrix(y_test, y_pred, normalize=False)
-    print_confusion_matrix(y_test, y_pred, normalize=True)
+    # 7. Confusion matrix graphs  →  saved to outputs/plots/
+    plot_confusion_matrix(y_test, y_pred, normalize=False)
+    plot_confusion_matrix(y_test, y_pred, normalize=True)
 
 
 if __name__ == "__main__":
