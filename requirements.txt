@@ -1,14 +1,5 @@
-opencv-python              4.12.0.88         pypi_0           pypi
-numpy                      1.24.3            py38hf6e8229_1
-numpy-base                 1.24.3            py38h060ed82_1
-cpuonly                    2.0               0                pytorch
-libjpeg-turbo              2.0.0             h9bf148f_0       pytorch
-pytorch                    2.4.1             py3.8_cpu_0      pytorch
-pytorch-mutex              1.0               cpu              pytorch
-torchvision                0.20.0            py38_cpu         pytorch
-torchvision                0.20.0            py38_cpu         pytorch
-ultralytics                8.0.196           pypi_0           pypi
-mmengine                   0.10.7            pypi_0           pypi
-mmcv                       2.1.0             pypi_0           pypi
-mmdet                      3.2.0             pypi_0           pypi
-mmpose                     1.3.2             dev_0            <develop>
+pandas
+numpy
+scikit-learn
+matplotlib
+joblib
