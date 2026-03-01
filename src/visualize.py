@@ -1,9 +1,10 @@
 # src/visualize.py
 
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from src.config import HAND_CONNECTIONS, NUM_SAMPLES, NUM_AUG_SAMPLES
+from src.config import HAND_CONNECTIONS, NUM_SAMPLES, NUM_AUG_SAMPLES, ROT_DEG, SCALE_JITTER, NOISE_STD, PLOTS_DIR
 from src.augmentation import augment_landmarks_xy
 
 
@@ -19,7 +20,7 @@ def inspect_data(df: pd.DataFrame):
 
 
 def plot_hand_skeleton(row: pd.Series, ax):
-    """Draw a single hand skeleton from a DataFrame row."""
+    """Draw a single hand skeleton from a DataFrame row onto an axis."""
     x_data = [row[f"{i}_x"] for i in range(21)]
     y_data = [row[f"{i}_y"] for i in range(21)]
     for conn in HAND_CONNECTIONS:
@@ -33,8 +34,8 @@ def plot_hand_skeleton(row: pd.Series, ax):
     ax.axis("off")
 
 
-def plot_samples(df: pd.DataFrame, n: int = NUM_SAMPLES):
-    """Plot n random hand skeletons from the dataset."""
+def plot_samples(df: pd.DataFrame, n: int = NUM_SAMPLES, filename: str = "samples.png"):
+    """Save n random hand skeletons to PLOTS_DIR."""
     samples = df.sample(n=min(n, len(df)))
     fig, axes = plt.subplots(1, len(samples), figsize=(15, 5))
     if len(samples) == 1:
@@ -42,11 +43,15 @@ def plot_samples(df: pd.DataFrame, n: int = NUM_SAMPLES):
     for ax, (_, row) in zip(axes, samples.iterrows()):
         plot_hand_skeleton(row, ax)
     plt.tight_layout()
-    plt.show()
+
+    save_path = os.path.join(PLOTS_DIR, filename)
+    fig.savefig(save_path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"[Plot] Samples saved → {save_path}")
 
 
 def draw_skeleton(data_vector: np.ndarray, ax, title: str):
-    """Draw a skeleton from a flat [x0, y0, x1, y1, ...] vector."""
+    """Draw a skeleton from a flat [x0, y0, x1, y1, ...] vector onto an axis."""
     x_coords = data_vector[0::2]
     y_coords = data_vector[1::2]
     for conn in HAND_CONNECTIONS:
@@ -60,8 +65,8 @@ def draw_skeleton(data_vector: np.ndarray, ax, title: str):
     ax.axis("off")
 
 
-def plot_augmentations(df: pd.DataFrame, n_copies: int = NUM_AUG_SAMPLES):
-    """Show original + augmented versions of a random sample."""
+def plot_augmentations(df: pd.DataFrame, n_copies: int = NUM_AUG_SAMPLES, filename: str = "augmentations.png"):
+    """Save original + augmented hand skeletons to PLOTS_DIR."""
     sample_row = df.sample(n=1)
     label = sample_row["label"].values[0]
     vid_id = sample_row["video_id"].values[0]
@@ -79,4 +84,8 @@ def plot_augmentations(df: pd.DataFrame, n_copies: int = NUM_AUG_SAMPLES):
         draw_skeleton(aug[0], axes[i + 1], f"Augmented {i + 1}")
     plt.suptitle(f"Augmentation: rot={ROT_DEG}°, scale={SCALE_JITTER}, noise={NOISE_STD}")
     plt.tight_layout()
-    plt.show()                  
+
+    save_path = os.path.join(PLOTS_DIR, filename)
+    fig.savefig(save_path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"[Plot] Augmentations saved → {save_path}")

@@ -1,3 +1,6 @@
+# src/config.py
+import os
+
 # Data
 CSV_FILE = "data/hand_landmarks.csv"
 NUM_LANDMARKS = 21
@@ -21,6 +24,7 @@ SVM_CLASS_WEIGHT = "balanced"
 # Visualization
 NUM_SAMPLES = 5
 NUM_AUG_SAMPLES = 4
+PLOTS_DIR = "outputs/plots"          # ← all plots saved here
 HAND_CONNECTIONS = [
     (0, 1), (1, 2), (2, 3), (3, 4),
     (0, 5), (5, 6), (6, 7), (7, 8),
@@ -28,3 +32,7 @@ HAND_CONNECTIONS = [
     (0, 13), (13, 14), (14, 15), (15, 16),
     (0, 17), (17, 18), (18, 19), (19, 20),
 ]
+
+# Create output directories on import
+os.makedirs(PLOTS_DIR, exist_ok=True)
+os.makedirs("outputs/models", exist_ok=True)
