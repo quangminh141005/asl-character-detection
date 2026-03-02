@@ -18,7 +18,7 @@ def make_splits(df: pd.DataFrame, feature_cols: list):
     Group-safe train/test split that GUARANTEES every label has
     at least `min_test_videos` videos in the test set.
 
-    Strategy (Option C — manual per-label reservation):
+    Strategy (manual per-label reservation):
       1. For each label, randomly pick min_test_videos videos → force into test.
       2. From the remaining videos, fill up to TEST_SIZE using GroupShuffleSplit.
       3. Any video not yet assigned → train.
