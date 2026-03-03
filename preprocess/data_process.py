@@ -5,8 +5,8 @@ import pandas as pd
 import numpy as np
 
 # --- CONFIGURATION ---
-DATASET_PATH = "../asl_dataset"  # Path to your folders A, B, C...
-OUTPUT_FILE = "./hand_landmarks.csv"
+DATASET_PATH = "data/raw_dataset"  # Path to your folders A, B, C...
+OUTPUT_FILE = "data/hand_landmark.csv"
 USE_Z = False        # Set True for (x,y,z), False for (x,y)
 FRAME_SKIP = 2       # Process every 2nd frame (0, 2, 4...)
 
